@@ -13,5 +13,5 @@ data class ColorCapture (
     @ColumnInfo(name = "color_hexa") var colorHexa: String,
     @ColumnInfo(name = "timestamp") var time: Long
 ) {
-    constructor():this(null, "", 0)
+    //constructor():this(null, "", 0)
 }

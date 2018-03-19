@@ -8,7 +8,7 @@ import android.content.Context
 /**
  * Room database to manage captured color registered with SQLite
  */
-@Database(entities = arrayOf(ColorCapture::class), version = 1)
+@Database(entities = arrayOf(ColorCapture::class), version = 1, exportSchema = false)
 abstract class ColorCaptureRoomDatabase : RoomDatabase() {
 
     abstract fun colorCaptureDao() : ColorCaptureDao
