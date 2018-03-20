@@ -38,4 +38,5 @@ class MainActivity : AppCompatActivity() {
         fragmentTransaction.replace(R.id.fragment_container, historyFragment)
         fragmentTransaction.commit()
     }
+
 }
