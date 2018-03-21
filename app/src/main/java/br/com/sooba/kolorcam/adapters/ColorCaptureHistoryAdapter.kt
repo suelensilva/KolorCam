@@ -10,8 +10,14 @@ import br.com.sooba.kolorcam.R
 import br.com.sooba.kolorcam.adapters.ColorCaptureHistoryAdapter.ColorCaptureViewHolder
 import br.com.sooba.kolorcam.room.ColorCapture
 
-class ColorCaptureHistoryAdapter(private val colorCaptures : List<ColorCapture>,
-                                 private val context : Context) : RecyclerView.Adapter<ColorCaptureViewHolder>() {
+class ColorCaptureHistoryAdapter(private val context : Context) : RecyclerView.Adapter<ColorCaptureViewHolder>() {
+
+    lateinit var colorCaptures : List<ColorCapture>
+
+    constructor(colorCaptures : List<ColorCapture>,
+                context : Context) : this(context) {
+        this.colorCaptures = colorCaptures
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorCaptureViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.color_capture_item, parent, false)

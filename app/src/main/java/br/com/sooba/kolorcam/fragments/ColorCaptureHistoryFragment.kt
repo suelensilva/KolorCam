@@ -1,6 +1,10 @@
 package br.com.sooba.kolorcam.fragments
 
 import android.app.Fragment
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.LifecycleOwner
+import android.arch.lifecycle.ViewModelProvider
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -11,6 +15,7 @@ import android.widget.TextView
 import br.com.sooba.kolorcam.R
 import br.com.sooba.kolorcam.adapters.ColorCaptureHistoryAdapter
 import br.com.sooba.kolorcam.room.ColorCapture
+import br.com.sooba.kolorcam.viewmodel.ColorCaptureViewModel
 
 /**
  * Fragment that shows the list of all captured colors
@@ -18,8 +23,15 @@ import br.com.sooba.kolorcam.room.ColorCapture
  */
 class ColorCaptureHistoryFragment : Fragment() {
 
+    private lateinit var mColorCaptureViewModel : ColorCaptureViewModel
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
+
         return inflater!!.inflate(R.layout.history_layout, container, false)
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
