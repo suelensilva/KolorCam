@@ -1,9 +1,6 @@
 package br.com.sooba.kolorcam.fragments
 
-import android.app.Fragment
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.ViewModelProvider
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
@@ -21,32 +18,43 @@ import br.com.sooba.kolorcam.viewmodel.ColorCaptureViewModel
  * Fragment that shows the list of all captured colors
  * made with this app
  */
-class ColorCaptureHistoryFragment : Fragment() {
+class ColorCaptureHistoryFragment : android.support.v4.app.Fragment() {
 
     private lateinit var mColorCaptureViewModel : ColorCaptureViewModel
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-
-        return inflater!!.inflate(R.layout.history_layout, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.history_layout, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val textView = view?.findViewById<TextView>(R.id.no_colors_msg)
+        mColorCaptureViewModel = ViewModelProviders.of(activity!!).get(ColorCaptureViewModel::class.java)
+
+        val textView = view.findViewById<TextView>(R.id.no_colors_msg)
         textView?.visibility = View.GONE
 
-        val recyclerView = view?.findViewById<RecyclerView>(R.id.history_recycler_view)
-        recyclerView!!.adapter = ColorCaptureHistoryAdapter(colors(), context)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.history_recycler_view)
 
         val layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        recyclerView.layoutManager = layoutManager
+        recyclerView!!.layoutManager = layoutManager
+
+        val adapter = ColorCaptureHistoryAdapter(context!!)
+        adapter.colorCaptures = ArrayList<ColorCapture>()
+        recyclerView.adapter = adapter
 
         recyclerView.visibility = View.VISIBLE
+
+        mColorCaptureViewModel.getAllColors().observe(activity!!, object : Observer<List<ColorCapture>> {
+            override fun onChanged(t: List<ColorCapture>?) {
+                adapter.colorCaptures = t!!
+                adapter.notifyDataSetChanged()
+            }
+        })
     }
 
     private fun colors(): List<ColorCapture> {

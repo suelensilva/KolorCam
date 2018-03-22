@@ -10,8 +10,10 @@ import br.com.sooba.kolorcam.R
 /**
  * Fragment to capture color using camera2 API
  */
-class CameraFragment : Fragment() {
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater!!.inflate(R.layout.camera_layout, container, false)
+class CameraFragment : android.support.v4.app.Fragment() {
+
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.camera_layout, container, false)
     }
 }
