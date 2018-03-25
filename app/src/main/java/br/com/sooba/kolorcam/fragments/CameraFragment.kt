@@ -89,12 +89,12 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
     /**
      * An additional thread for running tasks that shouldn't block the UI.
      */
-    private lateinit var mBackgroundThread : HandlerThread
+    private var mBackgroundThread : HandlerThread? = null
 
     /**
      * A {@link Handler} for running tasks in the background.
      */
-    lateinit var mBackgroundHandler : Handler
+    private var mBackgroundHandler : Handler? = null
 
     /**
      * {@link CaptureRequest.Builder} for the camera preview
@@ -121,7 +121,7 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
     /**
      * An {@link ImageReader} that handles still image capture.
      */
-    private lateinit var mImageReader : ImageReader
+    private var mImageReader : ImageReader? = null
 
     /**
      * Whether the current camera device supports Flash or not.
@@ -272,13 +272,34 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
         }
     }
 
+    override fun onPause() {
+        closeCamera()
+        stopBackgroundThread()
+        super.onPause()
+    }
+
     /**
      * Starts a background thread and its {@link Handler}.
      */
     private fun startBackgroundThread() {
         mBackgroundThread = HandlerThread("CameraBackground")
-        mBackgroundThread.start()
-        mBackgroundHandler = Handler(mBackgroundThread.looper)
+        mBackgroundThread?.start()
+        mBackgroundHandler = Handler(mBackgroundThread?.looper)
+    }
+
+    /**
+     * Stops the background thread and its {@link Handler}.
+     */
+    private fun stopBackgroundThread() {
+        mBackgroundThread?.quitSafely()
+
+        try {
+            mBackgroundThread?.join()
+            mBackgroundThread = null
+            mBackgroundHandler = null
+        } catch(e:InterruptedException) {
+            Log.e(TAG, "InterruptedException while stopping background thread", e)
+        }
     }
 
     fun openCamera(width:Int, height:Int) {
@@ -302,6 +323,29 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
             manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler)
         } catch (e : CameraAccessException) {
             Log.e(TAG, "CameraAccessException while trying to open camera", e)
+        }
+    }
+
+    /**
+     * Closes the current {@link CameraDevice}.
+     */
+    private fun closeCamera() {
+        try {
+            mCameraOpenCloseLock.acquire()
+
+            mCaptureSession?.close()
+            mCaptureSession = null
+
+            mCameraDevice?.close()
+            mCameraDevice = null
+
+            mImageReader?.close()
+            mImageReader = null
+
+        } catch (e:InterruptedException) {
+            Log.e(TAG, "InterruptedException while trying to close camera", e)
+        } finally {
+            mCameraOpenCloseLock.release()
         }
     }
 
@@ -332,7 +376,7 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
                 // For still image captures, we use the largest available size.
                 val largest : Size = map.getOutputSizes(ImageFormat.JPEG).maxWith(CompareSizesByArea())!!
                 mImageReader = ImageReader.newInstance(largest.width, largest.height, ImageFormat.JPEG,2)
-                mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, mBackgroundHandler)
+                mImageReader?.setOnImageAvailableListener(mOnImageAvailableListener, mBackgroundHandler)
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
@@ -471,7 +515,7 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
 
             // Here, we create a CameraCaptureSession for camera preview.
             mCameraDevice!!.createCaptureSession(
-                    Arrays.asList(surface, mImageReader.surface),
+                    Arrays.asList(surface, mImageReader?.surface),
                     object : CameraCaptureSession.StateCallback() {
                         override fun onConfigureFailed(cameraCaptureSession: CameraCaptureSession?) {
                             Toast.makeText(activity, "Failed", Toast.LENGTH_SHORT).show()
@@ -519,7 +563,7 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
 
             // This is the CaptureRequest.Builder that we use to take a picture.
             val captureBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-            captureBuilder.addTarget(mImageReader.surface)
+            captureBuilder.addTarget(mImageReader?.surface)
 
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureResult.CONTROL_AF_MODE_CONTINUOUS_PICTURE)

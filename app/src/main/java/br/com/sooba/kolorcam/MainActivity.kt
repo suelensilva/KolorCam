@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity() {
         mColorCaptureViewModel = ViewModelProviders.of(this).get(ColorCaptureViewModel::class.java)
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+
+        showCamera()
     }
 
     private fun showCamera() {
