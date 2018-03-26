@@ -112,6 +112,11 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
     lateinit var mPreviewRequest : CaptureRequest
 
     /**
+     * Flag that indicates if flash is on or off
+     */
+    private var mIsFlashOn = false
+
+    /**
      * The current state of camera state for taking pictures.
      *
      * @see #mCaptureCallback
@@ -528,9 +533,6 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
                                 // Auto focus should be continuous for camera preview.
                                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
 
-                                // Flash is automatically enabled when necessary.
-                                setAutoFlash(mPreviewRequestBuilder)
-
                                 // Finally, we start displaying the camera preview.
                                 mPreviewRequest = mPreviewRequestBuilder.build()
 
@@ -547,10 +549,23 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
         }
     }
 
-    fun setAutoFlash(requestBuilder : CaptureRequest.Builder) {
+    fun changeFlashStatus():Boolean {
         if(mFlashSupported) {
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)
+            mCaptureSession!!.stopRepeating()
+            if(mIsFlashOn) {
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF)
+                mCaptureSession!!.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler)
+
+                mIsFlashOn = false
+            } else {
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH)
+                mCaptureSession!!.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler)
+
+                mIsFlashOn = true
+            }
         }
+
+        return mIsFlashOn
     }
 
     /**
@@ -567,7 +582,6 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
 
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureResult.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-            setAutoFlash(captureBuilder)
 
             // Orientation
             val rotation = activity!!.windowManager.defaultDisplay.rotation
@@ -630,8 +644,6 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
         try {
             // Reset the auto-focus trigger
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL)
-
-            setAutoFlash(mPreviewRequestBuilder)
 
             mCaptureSession?.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler)
 

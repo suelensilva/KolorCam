@@ -4,4 +4,6 @@
     <string name="title_history">History</string>
     <string name="title_info">Info</string>
     <string name="no_colors">No colors yet =/</string>
+    <string name="flash_status_content_description">Change flash status</string>
+    <string name="capture_color_content_description">Capture color</string>
 </resources>
