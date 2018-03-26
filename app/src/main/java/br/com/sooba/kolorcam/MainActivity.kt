@@ -2,6 +2,7 @@ package br.com.sooba.kolorcam
 
 import android.arch.lifecycle.ViewModelProviders
 import android.arch.persistence.room.RoomDatabase
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
@@ -10,6 +11,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import br.com.sooba.kolorcam.activities.AboutActivity
+import br.com.sooba.kolorcam.activities.HistoryActivity
 import br.com.sooba.kolorcam.fragments.CameraFragment
 import br.com.sooba.kolorcam.fragments.ColorCaptureHistoryFragment
 import br.com.sooba.kolorcam.room.ColorCapture
@@ -29,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 //                return@OnNavigationItemSelectedListener true
 //            }
             R.id.navigation_history -> {
-                showHistory()
+//                showHistory()
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_info -> {
@@ -56,6 +59,22 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        val id = item?.itemId
+
+        when(id) {
+            R.id.navigation_history -> {
+                startActivity(Intent(this, HistoryActivity::class.java))
+                return true
+            }
+            R.id.navigation_info -> {
+                startActivity(Intent(this, AboutActivity::class.java))
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     fun switchFlash(view: View) {
         val newFlashState = mCameraFragment.changeFlashStatus()
         val flashIcon : ImageView = view as ImageView
@@ -73,15 +92,6 @@ class MainActivity : AppCompatActivity() {
 
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment_container, mCameraFragment)
-        fragmentTransaction.commit()
-    }
-
-    private fun showHistory() {
-
-        val historyFragment = ColorCaptureHistoryFragment()
-
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.fragment_container, historyFragment)
         fragmentTransaction.commit()
     }
 
