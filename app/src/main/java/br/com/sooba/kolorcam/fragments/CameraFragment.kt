@@ -38,21 +38,6 @@ private const val TAG = "CameraFragment"
 private const val MAX_PREVIEW_WIDTH = 1920
 private const val MAX_PREVIEW_HEIGHT = 1080
 
-/* Camera state: Showing camera preview.*/
-private const val STATE_PREVIEW = 0
-
-/* Camera state: Waiting for the focus to be locked. */
-private const val STATE_WAITING_LOCK = 1
-
-/* Camera state: Waiting for the exposure to be precapture state. */
-private const val STATE_WAITING_PRECAPTURE = 2
-
-/* Camera state: Waiting for the exposure state to be something other than precapture. */
-private const val STATE_WAITING_NON_PRECAPTURE = 3
-
-/* Camera state: Picture was taken. */
-private const val STATE_PICTURE_TAKEN = 4
-
 private var ORIENTATIONS : SparseIntArray = SparseIntArray()
 
 /**
@@ -117,13 +102,6 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
     private var mIsFlashOn = false
 
     /**
-     * The current state of camera state for taking pictures.
-     *
-     * @see #mCaptureCallback
-     */
-    var mState = STATE_PREVIEW
-
-    /**
      * An {@link ImageReader} that handles still image capture.
      */
     private var mImageReader : ImageReader? = null
@@ -181,76 +159,25 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
     }
 
     /**
-     * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
+     * A {@link CameraCaptureSession.CaptureCallback} that handles events related to bitmap captured
+     * from preview.
      */
     private val mCaptureCallback : CameraCaptureSession.CaptureCallback = object : CameraCaptureSession.CaptureCallback() {
 
         override fun onCaptureProgressed(session: CameraCaptureSession?,
                                          request: CaptureRequest?,
                                          partialResult: CaptureResult?) {
-            progress(partialResult)
         }
 
         override fun onCaptureCompleted(session: CameraCaptureSession?,
                                         request: CaptureRequest?,
                                         result: TotalCaptureResult?) {
-            progress(result)
+            processBitmap()
         }
 
-        private fun progress(result : CaptureResult?) {
-            when(mState) {
-                STATE_PREVIEW -> {
-                    // We have nothing to do when the camera preview is working normally.
-                }
-                STATE_WAITING_LOCK -> {
-
-                    val afState = result?.get(CaptureResult.CONTROL_AF_STATE)
-
-                    if(afState == null) {
-                        captureStillPicture()
-                    } else if(CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
-                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
-                        // CONTROL_AE_STATE can be null on some devices
-                        val aeState = result.get(CaptureResult.CONTROL_AE_STATE)
-
-                        if(aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
-                            mState = STATE_PICTURE_TAKEN
-                            captureStillPicture()
-                        } else {
-                            runPrecaptureSequence()
-                        }
-                    }
-
-                }
-                STATE_WAITING_PRECAPTURE -> {
-                    // CONTROL_AE_STATE can be null on some devices
-                    val aeState = result?.get(CaptureResult.CONTROL_AE_STATE)
-
-                    if(aeState == null ||
-                            aeState == CaptureResult.CONTROL_AE_STATE_PRECAPTURE ||
-                            aeState == CaptureResult.CONTROL_AE_STATE_FLASH_REQUIRED) {
-                        mState = STATE_WAITING_NON_PRECAPTURE
-                    }
-                }
-                STATE_WAITING_NON_PRECAPTURE -> {
-                    // CONTROL_AE_STATE can be null on some devices
-                    val aeState = result?.get(CaptureResult.CONTROL_AE_STATE)
-
-                    if(aeState == null || aeState != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
-                        mState = STATE_PICTURE_TAKEN
-                        captureStillPicture()
-                    }
-                }
-            }
+        private fun processBitmap() {
+            //TODO ("Process bitmap here")
         }
-    }
-
-    /**
-     * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
-     * still image is ready to be saved.
-     */
-    private val mOnImageAvailableListener = ImageReader.OnImageAvailableListener {
-        TODO("PROCESS PIXEL TO GET COLOR")
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -381,7 +308,6 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
                 // For still image captures, we use the largest available size.
                 val largest : Size = map.getOutputSizes(ImageFormat.JPEG).maxWith(CompareSizesByArea())!!
                 mImageReader = ImageReader.newInstance(largest.width, largest.height, ImageFormat.JPEG,2)
-                mImageReader?.setOnImageAvailableListener(mOnImageAvailableListener, mBackgroundHandler)
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
@@ -552,108 +478,20 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
     fun changeFlashStatus():Boolean {
         if(mFlashSupported) {
             mCaptureSession!!.stopRepeating()
-            if(mIsFlashOn) {
+            mIsFlashOn = if(mIsFlashOn) {
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF)
                 mCaptureSession!!.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler)
 
-                mIsFlashOn = false
+                false
             } else {
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH)
                 mCaptureSession!!.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler)
 
-                mIsFlashOn = true
+                true
             }
         }
 
         return mIsFlashOn
-    }
-
-    /**
-     * Capture a still picture. This method should be called when we get a response in
-     * {@link #mCaptureCallback} from both {@link #lockFocus()}.
-     */
-    fun captureStillPicture() {
-        try {
-            val activity = activity
-
-            // This is the CaptureRequest.Builder that we use to take a picture.
-            val captureBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-            captureBuilder.addTarget(mImageReader?.surface)
-
-            // Use the same AE and AF modes as the preview.
-            captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureResult.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-
-            // Orientation
-            val rotation = activity!!.windowManager.defaultDisplay.rotation
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getOrientation(rotation))
-
-            val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-                override fun onCaptureCompleted(session: CameraCaptureSession?,
-                                                request: CaptureRequest?,
-                                                result: TotalCaptureResult?) {
-                    unlockFocus()
-                }
-            }
-
-            mCaptureSession!!.stopRepeating()
-            mCaptureSession!!.capture(captureBuilder.build(), captureCallback, null)
-        } catch (e:CameraAccessException) {
-            Log.e(TAG, "CameraAccessException while capturing picture", e)
-        }
-    }
-
-    /**
-     * Retrieves the JPEG orientation from the specified screen rotation.
-     *
-     * @param rotation The screen rotation.
-     * @return The JPEG orientation (one of 0, 90, 270, and 360)
-     */
-    private fun getOrientation(rotation:Int) : Int {
-        // Sensor orientation is 90 for most devices, or 270 for some devices (eg. Nexus 5X)
-        // We have to take that into account and rotate JPEG properly.
-        // For devices with orientation of 90, we simply return our mapping from ORIENTATIONS.
-        // For devices with orientation of 270, we need to rotate the JPEG 180 degrees.
-        return (ORIENTATIONS.get(rotation) + mSensorOrientation + 270) % 360
-    }
-
-
-    /**
-     * Run the precapture sequence for capturing a still image. This method should be called when
-     * we get a response in {@link #mCaptureCallback} from {@link #lockFocus()}.
-     */
-    fun runPrecaptureSequence() {
-        try {
-            // This is how to tell the camera to trigger.
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
-                    CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START)
-
-            // Tell #mCaptureCallback to wait for the precapture sequence to be set.
-            mState = STATE_WAITING_PRECAPTURE
-            mCaptureSession!!.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler)
-        } catch (e:CameraAccessException) {
-            Log.d(TAG, "CameraAccessException while running pre capture sequence", e)
-        }
-    }
-
-
-    /**
-     * Unlock the focus. This method should be called when still image capture sequence is
-     * finished.
-     */
-    fun unlockFocus() {
-        try {
-            // Reset the auto-focus trigger
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL)
-
-            mCaptureSession?.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler)
-
-            // After this, the camera will go back to the normal state of preview.
-            mState = STATE_PREVIEW
-
-            mCaptureSession?.setRepeatingRequest(mPreviewRequest, mCaptureCallback, mBackgroundHandler)
-        } catch (e:CameraAccessException) {
-            Log.e(TAG, "CameraAccessException while unlocking focus", e)
-        }
     }
 
     companion object {
