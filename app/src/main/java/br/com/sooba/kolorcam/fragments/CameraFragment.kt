@@ -40,6 +40,8 @@ private const val MAX_PREVIEW_HEIGHT = 1080
 
 private var ORIENTATIONS : SparseIntArray = SparseIntArray()
 
+private const val TARGET_SIZE = 6
+
 /**
  * Fragment to capture color using camera2 API
  */
@@ -176,7 +178,39 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
         }
 
         private fun processBitmap() {
-            //TODO ("Process bitmap here")
+            val bitmap = mTextureView.bitmap
+            val width = bitmap.width
+            val height = bitmap.height
+
+            val xCenter = width / 2
+            val yCenter = height / 2
+
+            var avgR = 0
+            var avgG = 0
+            var avgB = 0
+
+            var r : Int
+            var g : Int
+            var b : Int
+
+            var count : Int
+
+            for(i in 0 until TARGET_SIZE) {
+                for(j in 0 until TARGET_SIZE) {
+                    count = i * TARGET_SIZE + j + 1
+                    val x = xCenter + i
+                    val y = yCenter + j
+
+                    val pixel = bitmap.getPixel(x, y)
+                    r = Color.red(pixel)
+                    g = Color.green(pixel)
+                    b = Color.blue(pixel)
+
+                    avgR += (r - avgR) / count
+                    avgG += (g - avgG) / count
+                    avgB += (b - avgB) / count
+                }
+            }
         }
     }
 
