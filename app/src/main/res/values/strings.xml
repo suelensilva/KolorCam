@@ -6,4 +6,5 @@
     <string name="no_colors">No colors yet =/</string>
     <string name="flash_status_content_description">Change flash status</string>
     <string name="capture_color_content_description">Capture color</string>
+    <string name="selected_color">Selected color</string>
 </resources>

@@ -23,6 +23,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:background="@drawable/target"
+        android:onClick="selectColor"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/controls"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -37,19 +38,6 @@
         app:layout_constraintBottom_toTopOf="@+id/controls"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
-
-    <!--<android.support.design.widget.BottomNavigationView
-
-        android:id="@+id/navigation"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="0dp"
-        android:layout_marginStart="0dp"
-        android:background="?android:attr/windowBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:menu="@menu/navigation" />-->
 
     <RelativeLayout
         android:id="@+id/controls"
@@ -78,6 +66,16 @@
             android:contentDescription="@string/flash_status_content_description"
             android:onClick="switchFlash"
             />
+
+        <ImageView
+            android:id="@+id/selected_color_image_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/selected_color"
+            android:contentDescription="@string/selected_color"/>
 
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>

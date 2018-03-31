@@ -20,7 +20,9 @@ class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener 
 
     private lateinit var mColorCaptureViewModel : ColorCaptureViewModel
 
-    lateinit var mCameraFragment : CameraFragment
+    private lateinit var mCameraFragment : CameraFragment
+
+    private var mCurrentColor : Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +75,23 @@ class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener 
         fragmentTransaction.commit()
     }
 
+    fun selectColor(view: View) {
+        val targetImageView = findViewById<ImageView>(R.id.selected_color_image_view)
+        val targetBackground = targetImageView.background
+
+        if(targetBackground is ShapeDrawable) {
+            targetBackground.paint.color = this.mCurrentColor!!
+        } else if (targetBackground is GradientDrawable) {
+            targetBackground.setColor(this.mCurrentColor!!)
+        } else if (targetBackground is ColorDrawable) {
+            targetBackground.color = this.mCurrentColor!!
+        }
+    }
+
     override fun onColorChanged(newColor: Int) {
+
+        mCurrentColor = newColor
+
         runOnUiThread({
             val targetImageView = findViewById<ImageView>(R.id.inner_target_image_view)
             val targetBackground = targetImageView.background
