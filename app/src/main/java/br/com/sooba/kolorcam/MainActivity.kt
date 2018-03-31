@@ -1,54 +1,32 @@
 package br.com.sooba.kolorcam
 
 import android.arch.lifecycle.ViewModelProviders
-import android.arch.persistence.room.RoomDatabase
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.ShapeDrawable
 import android.os.Bundle
-import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import br.com.sooba.kolorcam.activities.AboutActivity
 import br.com.sooba.kolorcam.activities.HistoryActivity
 import br.com.sooba.kolorcam.fragments.CameraFragment
-import br.com.sooba.kolorcam.fragments.ColorCaptureHistoryFragment
-import br.com.sooba.kolorcam.room.ColorCapture
 import br.com.sooba.kolorcam.viewmodel.ColorCaptureViewModel
-import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener {
 
     private lateinit var mColorCaptureViewModel : ColorCaptureViewModel
 
     lateinit var mCameraFragment : CameraFragment
-
-    private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
-        when (item.itemId) {
-//            R.id.navigation_camera -> {
-//                showCamera()
-//                return@OnNavigationItemSelectedListener true
-//            }
-            R.id.navigation_history -> {
-//                showHistory()
-                return@OnNavigationItemSelectedListener true
-            }
-            R.id.navigation_info -> {
-                return@OnNavigationItemSelectedListener true
-            }
-        }
-        false
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         mColorCaptureViewModel = ViewModelProviders.of(this).get(ColorCaptureViewModel::class.java)
-
-        //navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         showCamera()
     }
@@ -93,6 +71,25 @@ class MainActivity : AppCompatActivity() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment_container, mCameraFragment)
         fragmentTransaction.commit()
+    }
+
+    override fun onColorChanged(newColor: Int) {
+        runOnUiThread({
+            val targetImageView = findViewById<ImageView>(R.id.inner_target_image_view)
+            val targetBackground = targetImageView.background
+
+            if(targetBackground is ShapeDrawable) {
+                targetBackground.paint.color = newColor
+            } else if (targetBackground is GradientDrawable) {
+                targetBackground.setColor(newColor)
+            } else if (targetBackground is ColorDrawable) {
+                targetBackground.color = newColor
+            }
+        })
+
+        //val width = Math.round(2*(resources.displayMetrics.xdpi/ DisplayMetrics.DENSITY_DEFAULT));
+        //targetBackground.setStroke(width, newColor)
+
     }
 
 }

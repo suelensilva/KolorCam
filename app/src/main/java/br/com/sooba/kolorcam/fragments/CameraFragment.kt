@@ -47,6 +47,10 @@ private const val TARGET_SIZE = 6
  */
 class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnRequestPermissionsResultCallback {
 
+    interface OnColorChangedListener {
+        fun onColorChanged(newColor : Int)
+    }
+
     init {
         ORIENTATIONS.append(Surface.ROTATION_0, 90)
         ORIENTATIONS.append(Surface.ROTATION_90, 0)
@@ -113,6 +117,13 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
      */
     private var mFlashSupported : Boolean = false
 
+
+    /**
+     * Listener that notifies UI when there is a new color
+     * captured
+     */
+    private var mColorChangedListener : OnColorChangedListener? = null
+
     /**
      * Orientation of camera sensor
      */
@@ -157,7 +168,6 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
             mCameraDevice = null
             activity!!.finish()
         }
-
     }
 
     /**
@@ -211,6 +221,10 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
                     avgB += (b - avgB) / count
                 }
             }
+
+            val colorInt = Color.rgb(avgR, avgG, avgB)
+
+            mColorChangedListener?.onColorChanged(colorInt)
         }
     }
 
@@ -242,6 +256,16 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
         closeCamera()
         stopBackgroundThread()
         super.onPause()
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+
+        try {
+            mColorChangedListener = context as OnColorChangedListener
+        } catch (e : ClassCastException) {
+            throw ClassCastException(context.toString()+" must implement OnColorChangedListener")
+        }
     }
 
     /**
