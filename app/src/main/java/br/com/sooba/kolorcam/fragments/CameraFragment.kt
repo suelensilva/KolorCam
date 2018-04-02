@@ -205,6 +205,8 @@ class CameraFragment : android.support.v4.app.Fragment(), ActivityCompat.OnReque
 
             var count : Int
 
+            // Run over all pixels around the target (middle of
+            // preview), calculating the average value
             for(i in 0 until TARGET_SIZE) {
                 for(j in 0 until TARGET_SIZE) {
                     count = i * TARGET_SIZE + j + 1

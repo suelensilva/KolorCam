@@ -3,6 +3,7 @@ package br.com.sooba.kolorcam.fragments
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -42,6 +43,8 @@ class ColorCaptureHistoryFragment : android.support.v4.app.Fragment() {
 
         val layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         recyclerView!!.layoutManager = layoutManager
+
+        recyclerView.addItemDecoration(DividerItemDecoration(recyclerView.context, layoutManager.orientation));
 
         val adapter = ColorCaptureHistoryAdapter(context!!)
         adapter.colorCaptures = ArrayList<ColorCapture>()
