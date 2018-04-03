@@ -11,9 +11,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import br.com.sooba.kolorcam.activities.AboutActivity
 import br.com.sooba.kolorcam.activities.HistoryActivity
 import br.com.sooba.kolorcam.fragments.CameraFragment
+import br.com.sooba.kolorcam.room.ColorCapture
 import br.com.sooba.kolorcam.viewmodel.ColorCaptureViewModel
 
 class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener {
@@ -23,6 +25,7 @@ class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener 
     private lateinit var mCameraFragment : CameraFragment
 
     private var mCurrentColor : Int? = null
+    private var mSelectedColor : Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +79,9 @@ class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener 
     }
 
     fun selectColor(view: View) {
+
+        mSelectedColor = mCurrentColor
+
         val targetImageView = findViewById<ImageView>(R.id.selected_color_image_view)
         val targetBackground = targetImageView.background
 
@@ -86,6 +92,17 @@ class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener 
         } else if (targetBackground is ColorDrawable) {
             targetBackground.color = this.mCurrentColor!!
         }
+    }
+
+    fun saveColor(view: View) {
+        val colorCaptureViewModel = ViewModelProviders.of(this).get(ColorCaptureViewModel::class.java)
+        val capturedColor = ColorCapture()
+        capturedColor.colorRgb = mSelectedColor!!
+        capturedColor.time = System.currentTimeMillis()
+
+        colorCaptureViewModel.insertColor(capturedColor)
+
+        Toast.makeText(this, "Saved color = "+"#"+Integer.toHexString(mSelectedColor!!), Toast.LENGTH_SHORT).show()
     }
 
     override fun onColorChanged(newColor: Int) {
@@ -104,10 +121,6 @@ class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener 
                 targetBackground.color = newColor
             }
         })
-
-        //val width = Math.round(2*(resources.displayMetrics.xdpi/ DisplayMetrics.DENSITY_DEFAULT));
-        //targetBackground.setStroke(width, newColor)
-
     }
 
 }

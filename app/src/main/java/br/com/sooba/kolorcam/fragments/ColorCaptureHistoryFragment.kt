@@ -47,7 +47,7 @@ class ColorCaptureHistoryFragment : android.support.v4.app.Fragment() {
         recyclerView.addItemDecoration(DividerItemDecoration(recyclerView.context, layoutManager.orientation));
 
         val adapter = ColorCaptureHistoryAdapter(context!!)
-        adapter.colorCaptures = ArrayList<ColorCapture>()
+        adapter.colorCaptures = ArrayList()
         recyclerView.adapter = adapter
 
         recyclerView.visibility = View.VISIBLE
@@ -58,16 +58,5 @@ class ColorCaptureHistoryFragment : android.support.v4.app.Fragment() {
                 adapter.notifyDataSetChanged()
             }
         })
-    }
-
-    private fun colors(): List<ColorCapture> {
-        return listOf(
-                ColorCapture(1, "#FF0000",
-                        System.currentTimeMillis()),
-                ColorCapture(2, "#00FF00",
-                        System.currentTimeMillis()),
-                ColorCapture(3, "#0000FF",
-                        System.currentTimeMillis())
-        )
     }
 }

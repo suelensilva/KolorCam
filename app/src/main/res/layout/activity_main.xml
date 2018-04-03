@@ -75,7 +75,8 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@drawable/selected_color"
-            android:contentDescription="@string/selected_color"/>
+            android:contentDescription="@string/selected_color"
+            android:onClick="saveColor"/>
 
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>

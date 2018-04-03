@@ -10,8 +10,8 @@ import android.arch.persistence.room.PrimaryKey
 @Entity(tableName = "color_capture")
 data class ColorCapture (
     @PrimaryKey(autoGenerate = true) var id: Long?,
-    @ColumnInfo(name = "color_hexa") var colorHexa: String,
+    @ColumnInfo(name = "color_rgb") var colorRgb: Int,
     @ColumnInfo(name = "timestamp") var time: Long
 ) {
-    //constructor():this(null, "", 0)
+    constructor():this(null, 0, 0)
 }

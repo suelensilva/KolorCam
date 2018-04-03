@@ -31,9 +31,9 @@ class ColorCaptureHistoryAdapter(private val context : Context) : RecyclerView.A
     }
 
     override fun onBindViewHolder(holder: ColorCaptureViewHolder, position: Int) {
-        val colorHexa = colorCaptures[position].colorHexa
-        holder.colorHexaTextView.text = colorHexa
-        holder.colorImageView.setColor(Color.parseColor(colorHexa))
+        val colorInt = colorCaptures[position].colorRgb
+        holder.colorHexaTextView.text = "#"+Integer.toHexString(colorInt);
+        holder.colorImageView.setColor(colorInt)
     }
 
     class ColorCaptureViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {

@@ -6,6 +6,7 @@ import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.RoomDatabase.Callback
 import android.content.Context
+import android.graphics.Color
 import android.os.AsyncTask
 
 /**
@@ -43,8 +44,8 @@ abstract class ColorCaptureRoomDatabase : RoomDatabase() {
         class PopulateDbAsync(var db : ColorCaptureRoomDatabase?) : AsyncTask<Void, Void, Void>() {
             override fun doInBackground(vararg p0: Void?): Void? {
                 val dao = db?.colorCaptureDao()
-                dao?.insert(ColorCapture(4, "#FF00FF", System.currentTimeMillis()))
-                dao?.insert(ColorCapture(5, "#FFFFFF", System.currentTimeMillis()))
+                dao?.insert(ColorCapture(4, Color.parseColor("#FF00FF"), System.currentTimeMillis()))
+                dao?.insert(ColorCapture(5, Color.parseColor("#FFFFFF"), System.currentTimeMillis()))
 
                 return null
             }
