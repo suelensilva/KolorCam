@@ -20,36 +20,16 @@ abstract class ColorCaptureRoomDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE : ColorCaptureRoomDatabase? = null
 
-        var sRoomDatabaseCallback  = object : RoomDatabase.Callback() {
-            override fun onOpen(db: SupportSQLiteDatabase) {
-                super.onOpen(db)
-
-                PopulateDbAsync(INSTANCE).execute()
-            }
-        }
-
         fun getDatabase(context : Context) : ColorCaptureRoomDatabase? {
             if(INSTANCE == null) {
                 INSTANCE = Room.databaseBuilder(context.applicationContext,
                         ColorCaptureRoomDatabase::class.java,
                         "color.db")
                         .fallbackToDestructiveMigration()
-                        .addCallback(sRoomDatabaseCallback)
                         .build()
             }
 
             return INSTANCE
-        }
-
-        class PopulateDbAsync(var db : ColorCaptureRoomDatabase?) : AsyncTask<Void, Void, Void>() {
-            override fun doInBackground(vararg p0: Void?): Void? {
-                val dao = db?.colorCaptureDao()
-                dao?.insert(ColorCapture(4, Color.parseColor("#FF00FF"), System.currentTimeMillis()))
-                dao?.insert(ColorCapture(5, Color.parseColor("#FFFFFF"), System.currentTimeMillis()))
-
-                return null
-            }
-
         }
     }
 }

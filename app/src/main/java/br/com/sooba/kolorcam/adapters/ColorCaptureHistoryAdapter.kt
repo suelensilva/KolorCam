@@ -11,6 +11,9 @@ import br.com.sooba.kolorcam.R
 import br.com.sooba.kolorcam.adapters.ColorCaptureHistoryAdapter.ColorCaptureViewHolder
 import br.com.sooba.kolorcam.room.ColorCapture
 import br.com.sooba.kolorcam.views.ColorImageView
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ColorCaptureHistoryAdapter(private val context : Context) : RecyclerView.Adapter<ColorCaptureViewHolder>() {
 
@@ -34,11 +37,19 @@ class ColorCaptureHistoryAdapter(private val context : Context) : RecyclerView.A
         val colorInt = colorCaptures[position].colorRgb
         holder.colorHexaTextView.text = "#"+Integer.toHexString(colorInt);
         holder.colorImageView.setColor(colorInt)
+
+        val colorTimestampDate = colorCaptures[position].time
+
+        // FIXME format time considering device's locale
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        val timestampStr = dateFormat.format(Date(colorTimestampDate))
+        holder.colorTimestampTextView.text = timestampStr
     }
 
     class ColorCaptureViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
         var colorHexaTextView : TextView = itemView.findViewById(R.id.color_hexa)
         var colorImageView : ColorImageView = itemView.findViewById(R.id.color_image_view)
+        var colorTimestampTextView : TextView = itemView.findViewById(R.id.color_timestamp)
     }
 }
 

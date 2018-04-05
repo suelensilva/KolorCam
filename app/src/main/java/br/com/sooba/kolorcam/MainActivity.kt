@@ -92,6 +92,8 @@ class MainActivity : AppCompatActivity(), CameraFragment.OnColorChangedListener 
         } else if (targetBackground is ColorDrawable) {
             targetBackground.color = this.mCurrentColor!!
         }
+
+        targetImageView.visibility = View.VISIBLE
     }
 
     fun saveColor(view: View) {
