@@ -27,17 +27,10 @@ class ColorCaptureHistoryFragment : android.support.v4.app.Fragment() {
         return inflater.inflate(R.layout.history_layout, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         mColorCaptureViewModel = ViewModelProviders.of(activity!!).get(ColorCaptureViewModel::class.java)
-
-        val textView = view.findViewById<TextView>(R.id.no_colors_msg)
-        textView?.visibility = View.GONE
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.history_recycler_view)
 
@@ -54,8 +47,14 @@ class ColorCaptureHistoryFragment : android.support.v4.app.Fragment() {
 
         mColorCaptureViewModel.getAllColors().observe(activity!!, object : Observer<List<ColorCapture>> {
             override fun onChanged(t: List<ColorCapture>?) {
-                adapter.colorCaptures = t!!
-                adapter.notifyDataSetChanged()
+
+                if(t!!.isNotEmpty()) {
+                    val textView = view.findViewById<TextView>(R.id.no_colors_msg)
+                    textView?.visibility = View.GONE
+
+                    adapter.colorCaptures = t
+                    adapter.notifyDataSetChanged()
+                }
             }
         })
     }
